@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="马灯照亮苟坝——贵州红色文化互动H5，重回1935年苟坝会议，一盏马灯照亮中国革命的转折之路。">
+<meta property="og:title" content="马灯照亮苟坝 · 一盏马灯照亮转折之路">
+<meta property="og:description" content="1935年3月的那个雨夜，毛泽东提着马灯走过苟坝的田间小道。点亮马灯，重温贵州大山里的红色转折。">
+<meta property="og:type" content="website">
+<title>马灯照亮苟坝 · 贵州红色文化</title>
+<style>
+  :root{
+    --paper:#f3e9d7;--gold:#c8a15a;--gold-hi:#f2cf8a;--gold-dim:#8a6f3e;
+    --red:#9e2c18;--night:#0b0d12;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--night);}
+  body{font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;color:var(--paper);
+    overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+  img,video{display:block;width:100%;height:100%;object-fit:cover;}
+  ::selection{background:rgba(200,161,90,.4);}
+
+  /* ---------- 加载页 ---------- */
+  #loader{position:fixed;inset:0;z-index:99;background:var(--night);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .9s,visibility .9s;}
+  #loader.done{opacity:0;visibility:hidden;}
+  .ld-lantern{width:64px;height:64px;position:relative;animation:swing 3s ease-in-out infinite;transform-origin:top center;}
+  .ld-wire{width:2px;height:26px;background:var(--gold-dim);margin:0 auto;}
+  .ld-body{width:44px;height:52px;margin:0 auto;border-radius:8px 8px 12px 12px;border:2px solid var(--gold);
+    position:relative;overflow:hidden;background:radial-gradient(circle at 50% 60%,#f7c96b 0%,#b3722a 55%,#5a3413 100%);
+    box-shadow:0 0 24px rgba(247,180,80,.55);}
+  .ld-body::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 8px,rgba(60,30,5,.5) 8px 10px);}
+  .ld-flame{position:absolute;left:50%;top:58%;width:10px;height:14px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle,#fff3c4 0%,#ffb638 45%,#e05e1a 80%,transparent 100%);
+    border-radius:50% 50% 40% 40%;animation:flicker .9s infinite alternate;filter:blur(.4px);}
+  @keyframes flicker{from{opacity:.85;transform:translate(-50%,-50%) scale(1);}to{opacity:1;transform:translate(-50%,-52%) scale(1.18);}}
+  @keyframes swing{0%,100%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}}
+  #loader p{margin-top:22px;font-size:13px;letter-spacing:.5em;text-indent:.5em;color:var(--gold);}
+  #bar{width:120px;height:2px;background:rgba(200,161,90,.25);margin-top:16px;border-radius:2px;overflow:hidden;}
+  #bar i{display:block;height:100%;width:0%;background:var(--gold);transition:width .3s;}
+
+  /* ---------- 进度 & 声音 ---------- */
+  #progress{position:fixed;top:0;left:0;height:2px;z-index:60;width:0%;background:linear-gradient(90deg,rgba(200,161,90,.2),var(--gold-hi));}
+  #rail{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:55;height:150px;width:30px;opacity:0;transition:opacity .6s;pointer-events:none;}
+  #rail.show{opacity:1;}
+  #rail .track{position:absolute;right:14px;top:6px;bottom:6px;width:1px;background:linear-gradient(180deg,rgba(200,161,90,.5),rgba(200,161,90,.12));}
+  #railLan{position:absolute;right:6px;top:0;width:18px;height:30px;transition:top .15s linear;filter:drop-shadow(0 0 6px rgba(247,180,80,.8));}
+  #sndBtn{position:fixed;top:14px;right:14px;z-index:58;width:38px;height:38px;border-radius:50%;
+    border:1px solid rgba(200,161,90,.55);background:rgba(11,13,18,.45);backdrop-filter:blur(4px);
+    color:var(--gold);font-size:15px;display:none;align-items:center;justify-content:center;cursor:pointer;}
+  #sndBtn.show{display:flex;}
+  #sndBtn.on{animation:sndpulse 2.6s ease-in-out infinite;}
+  @keyframes sndpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,161,90,.35);}50%{box-shadow:0 0 0 8px rgba(200,161,90,0);}}
+
+  /* ---------- 提灯光晕（跟随手指） ---------- */
+  #torch{position:fixed;z-index:54;width:300px;height:300px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,214,130,.34) 0%,rgba(255,190,90,.14) 34%,transparent 66%);
+    mix-blend-mode:screen;transform:translate(-50%,-50%);opacity:0;transition:opacity .6s;}
+  #torch.on{opacity:1;}
+  #torchHint{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);z-index:57;
+    background:rgba(20,15,10,.82);border:1px solid rgba(200,161,90,.5);color:var(--gold-hi);
+    font-size:12px;letter-spacing:.16em;padding:10px 20px;border-radius:30px;backdrop-filter:blur(4px);
+    opacity:0;transition:opacity .5s;pointer-events:none;white-space:nowrap;}
+  #torchHint.show{opacity:1;}
+
+  /* ---------- 通用章节 ---------- */
+  .scene{position:relative;overflow:hidden;}
+  .scene .media{position:absolute;inset:0;}
+  .scene .media::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(11,13,18,.58),rgba(11,13,18,.14) 30%,rgba(11,13,18,.14) 58%,rgba(11,13,18,.7));}
+  .inner{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 26px 12vh;}
+  .chapter-tag{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .chapter-tag .no{font-size:36px;font-weight:700;color:var(--gold);font-family:Georgia,"Noto Serif SC",serif;text-shadow:0 2px 12px rgba(0,0,0,.6);}
+  .chapter-tag .rule{flex:0 0 34px;height:1px;background:var(--gold-dim);}
+  .chapter-tag .name{font-size:12px;letter-spacing:.42em;color:var(--gold);}
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity 1s ease,transform 1s ease;}
+  .reveal.on{opacity:1;transform:translateY(0);}
+  .d1{transition-delay:.14s;}.d2{transition-delay:.28s;}.d3{transition-delay:.42s;}
+  .scene h2{font-size:clamp(26px,7vw,37px);letter-spacing:.1em;line-height:1.4;margin-bottom:16px;font-weight:700;text-shadow:0 2px 18px rgba(0,0,0,.65);}
+  .scene p.body{font-size:15px;line-height:2.05;letter-spacing:.06em;color:rgba(243,233,215,.95);text-shadow:0 1px 10px rgba(0,0,0,.8);}
+  .scene p.body b{color:var(--gold-hi);font-weight:600;}
+  .caption{position:relative;z-index:2;margin:0 18px;padding:15px 18px 17px;
+    background:linear-gradient(180deg,transparent,rgba(10,8,6,.8) 26%,rgba(10,8,6,.88));
+    font-size:14.5px;line-height:1.95;letter-spacing:.08em;color:#f5ecd9;text-align:center;border-bottom:1px solid rgba(200,161,90,.45);}
+  .caption b{color:var(--gold-hi);}
+
+  /* ---------- 封面 ---------- */
+  .cover{position:relative;height:100vh;min-height:620px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+  .cover .bg{position:absolute;inset:0;}
+  .cover .bg::after{content:"";position:absolute;inset:0;background:
+    radial-gradient(ellipse at 50% 66%,rgba(247,190,90,.18),transparent 44%),
+    linear-gradient(180deg,rgba(11,13,18,.78) 0%,rgba(11,13,18,.18) 34%,rgba(11,13,18,.22) 60%,rgba(11,13,18,.94) 100%);}
+  #rainA,#rainB,#rainC{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}
+  .scene #rainB,.scene #rainC{z-index:2;}
+  .flash{position:absolute;inset:0;z-index:3;background:rgba(220,230,255,.55);opacity:0;pointer-events:none;}
+  .flash.go{animation:flashA .7s ease-out;}
+  @keyframes flashA{0%{opacity:.55;}18%{opacity:.08;}32%{opacity:.32;}100%{opacity:0;}}
+  .cover-inner{position:relative;z-index:4;text-align:center;padding:0 28px;transform:translateY(-22px);}
+  .kicker{font-size:11px;letter-spacing:.62em;text-indent:.62em;color:var(--gold);opacity:0;animation:up 1s .3s forwards;}
+  h1.title{margin-top:24px;font-size:clamp(46px,12.5vw,76px);font-weight:700;letter-spacing:.14em;line-height:1.2;
+    background:linear-gradient(180deg,#fdf6e3 8%,var(--gold-hi) 55%,#caa25c 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 6px 26px rgba(0,0,0,.7));opacity:0;animation:up 1.1s .55s forwards;}
+  .cover-sub{margin-top:18px;font-size:13.5px;letter-spacing:.3em;text-indent:.3em;color:rgba(243,233,215,.88);opacity:0;animation:up 1.1s .85s forwards;}
+  .cover-line{width:56px;height:1px;background:var(--gold);margin:24px auto 0;opacity:0;animation:up 1s 1s forwards;}
+  .seal{position:absolute;right:7%;top:15%;width:64px;height:64px;border:2px solid rgba(158,44,24,.9);border-radius:6px;
+    display:flex;align-items:center;justify-content:center;z-index:4;color:#c33a22;font-size:15px;line-height:1.25;
+    letter-spacing:2px;font-weight:700;text-align:center;writing-mode:vertical-rl;transform:rotate(6deg);opacity:0;
+    animation:stamp .5s 1.6s cubic-bezier(.2,2,.4,1) forwards;background:rgba(158,44,24,.08);box-shadow:inset 0 0 10px rgba(158,44,24,.25);}
+  @keyframes stamp{from{opacity:0;transform:rotate(6deg) scale(2.2);}to{opacity:.92;transform:rotate(6deg) scale(1);}}
+  #startBtn{margin-top:36px;display:inline-flex;flex-direction:column;align-items:center;gap:12px;
+    background:none;border:none;color:var(--paper);cursor:pointer;font-family:inherit;opacity:0;animation:up 1s 1.25s forwards;}
+  #startBtn .ring{width:76px;height:76px;border-radius:50%;border:1px solid rgba(200,161,90,.7);
+    display:flex;align-items:center;justify-content:center;position:relative;animation:pulse 2.4s ease-in-out infinite;}
+  #startBtn .ring svg{width:36px;height:36px;}
+  #startBtn span{font-size:12px;letter-spacing:.5em;text-indent:.5em;color:var(--gold);}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,161,90,.45);}50%{box-shadow:0 0 0 18px rgba(200,161,90,0);}}
+  @keyframes up{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:translateY(0);}}
+  .scroll-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:4;
+    font-size:11px;letter-spacing:.3em;color:rgba(243,233,215,.6);animation:bob 2s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,8px);}}
+
+  /* ---------- 引文打字机 ---------- */
+  .quote{min-height:88vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 30px;position:relative;background:#0d0e13;}
+  .quote .glowspot{position:absolute;left:50%;top:50%;width:340px;height:340px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle,rgba(247,190,90,.14),transparent 60%);pointer-events:none;}
+  .quote .q{position:relative;z-index:2;font-size:clamp(23px,6.2vw,32px);line-height:2.1;letter-spacing:.14em;color:var(--paper);min-height:6.4em;}
+  .quote .q em{font-style:normal;color:var(--gold-hi);}
+  .quote .caret{display:inline-block;width:2px;height:1em;background:var(--gold);vertical-align:-.15em;margin-left:3px;animation:blink 1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  .quote .qsmall{position:relative;z-index:2;margin-top:26px;font-size:11.5px;letter-spacing:.4em;text-indent:.4em;color:rgba(243,233,215,.55);opacity:0;transition:opacity 1.2s;}
+  .quote.done .qsmall{opacity:1;}
+
+  /* ---------- 视频场景 ---------- */
+  .video-wrap{position:relative;height:100vh;min-height:560px;overflow:hidden;background:#000;}
+  .video-wrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .video-wrap::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(11,13,18,.5),transparent 24%,transparent 62%,rgba(11,13,18,.78));pointer-events:none;}
+  .vcap{position:absolute;z-index:3;left:0;right:0;bottom:9%;padding:0 30px;text-align:center;
+    font-size:15px;line-height:1.9;letter-spacing:.1em;color:#fdf6e3;text-shadow:0 2px 12px rgba(0,0,0,.9);
+    opacity:0;transform:translateY(14px);transition:opacity .7s,transform .7s;pointer-events:none;}
+  .vcap.on{opacity:1;transform:translateY(0);}
+  .vcap b{color:var(--gold-hi);}
+  .vtip{position:absolute;z-index:3;top:16px;right:16px;font-size:10px;letter-spacing:.2em;
+    color:rgba(243,233,215,.5);border:1px solid rgba(243,233,215,.22);padding:4px 9px;border-radius:20px;backdrop-filter:blur(3px);}
+
+  /* ---------- 历史原声 ---------- */
+  .voices{background:#0b0d12;padding:80px 24px 64px;position:relative;}
+  .voices::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:56px;background:linear-gradient(180deg,transparent,var(--gold-dim));}
+  .vitem{max-width:420px;margin:0 auto 24px;padding:24px 22px 20px;position:relative;
+    border-left:2px solid rgba(200,161,90,.55);
+    background:linear-gradient(90deg,rgba(200,161,90,.08),rgba(200,161,90,0) 80%);}
+  .vitem .qmark{font-size:42px;line-height:.7;color:rgba(200,161,90,.4);font-family:Georgia,serif;}
+  .vtext{font-size:16.5px;line-height:1.95;letter-spacing:.05em;color:#f7efdd;margin:10px 0 14px;}
+  .vwho{font-size:13px;color:var(--gold-hi);letter-spacing:.14em;}
+  .vsrc{font-size:11px;color:rgba(243,233,215,.45);letter-spacing:.05em;margin-top:7px;line-height:1.75;}
+  .vnote{max-width:420px;margin:10px auto 0;text-align:center;font-size:10.5px;letter-spacing:.06em;
+    color:rgba(243,233,215,.32);line-height:1.9;}
+
+  /* ---------- 档案卡 ---------- */
+  .archive{background:#100d0a;padding:76px 0 66px;position:relative;}
+  .sec-title{text-align:center;font-size:12.5px;letter-spacing:.55em;text-indent:.55em;color:var(--gold);margin-bottom:10px;}
+  .sec-head{text-align:center;font-size:clamp(24px,6.4vw,32px);letter-spacing:.14em;margin-bottom:12px;}
+  .sec-sub{text-align:center;font-size:11px;letter-spacing:.24em;color:rgba(243,233,215,.45);margin-bottom:34px;}
+  .cards{display:flex;gap:16px;overflow-x:auto;padding:6px 22px 22px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
+  .cards::-webkit-scrollbar{display:none;}
+  .card{flex:0 0 76%;max-width:320px;scroll-snap-align:center;background:linear-gradient(165deg,#1d1712,#120e0a);
+    border:1px solid rgba(200,161,90,.28);border-radius:14px;padding:24px 22px 26px;position:relative;overflow:hidden;}
+  .card::before{content:"";position:absolute;left:10px;top:10px;right:10px;bottom:10px;border:1px solid rgba(200,161,90,.14);border-radius:9px;pointer-events:none;}
+  .card .tag{display:inline-block;font-size:10px;letter-spacing:.28em;color:var(--red);border:1px solid rgba(158,44,24,.55);
+    padding:3px 10px;border-radius:3px;margin-bottom:16px;background:rgba(158,44,24,.08);}
+  .card h3{font-size:19px;letter-spacing:.1em;margin-bottom:12px;color:var(--gold-hi);}
+  .card p{font-size:13.5px;line-height:1.95;color:rgba(243,233,215,.85);letter-spacing:.04em;}
+  .card .fig{font-size:34px;font-family:Georgia,serif;color:rgba(200,161,90,.22);position:absolute;right:16px;bottom:6px;}
+
+  /* ---------- 灯下小测 ---------- */
+  .quiz{background:#0d0e13;padding:78px 26px 70px;position:relative;}
+  .quiz::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:56px;background:linear-gradient(180deg,transparent,var(--gold-dim));}
+  .qbox{max-width:420px;margin:0 auto 30px;background:linear-gradient(165deg,#1a1410,#110d09);
+    border:1px solid rgba(200,161,90,.3);border-radius:14px;padding:26px 22px;}
+  .qbox .qn{font-size:11px;letter-spacing:.3em;color:var(--gold);margin-bottom:10px;}
+  .qbox .qt{font-size:16.5px;line-height:1.8;letter-spacing:.05em;margin-bottom:18px;}
+  .qopt{display:block;width:100%;text-align:left;background:rgba(243,233,215,.05);border:1px solid rgba(200,161,90,.22);
+    color:rgba(243,233,215,.9);font-family:inherit;font-size:14px;letter-spacing:.04em;line-height:1.6;
+    padding:12px 16px;border-radius:9px;margin-bottom:10px;cursor:pointer;transition:all .3s;}
+  .qopt:active{transform:scale(.98);}
+  .qopt.ok{background:rgba(120,160,80,.16);border-color:#7ba05a;color:#cfe3b0;}
+  .qopt.no{background:rgba(158,44,24,.16);border-color:rgba(158,44,24,.6);color:#e0a08e;}
+  .qopt[disabled]{cursor:default;}
+  .qexp{font-size:12.5px;line-height:1.9;color:rgba(200,161,90,.85);letter-spacing:.04em;display:none;margin-top:4px;}
+  .qexp.show{display:block;animation:up .6s ease;}
+  #quizResult{text-align:center;font-size:14px;letter-spacing:.2em;color:var(--gold-hi);opacity:0;transition:opacity 1s;}
+  #quizResult.show{opacity:1;}
+
+  /* ---------- 时间线 ---------- */
+  .dark-sec{background:#0d0e13;padding:78px 26px 66px;position:relative;}
+  .dark-sec::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:56px;background:linear-gradient(180deg,transparent,var(--gold-dim));}
+  .tl{max-width:420px;margin:40px auto 0;position:relative;padding-left:26px;}
+  .tl::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:linear-gradient(180deg,var(--gold-dim),rgba(200,161,90,.12));}
+  .tl-item{position:relative;margin-bottom:32px;}
+  .tl-item::before{content:"";position:absolute;left:-25px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(200,161,90,.85);}
+  .tl-item .t{font-size:13px;color:var(--gold);letter-spacing:.12em;margin-bottom:6px;}
+  .tl-item .c{font-size:14.5px;line-height:1.95;color:rgba(243,233,215,.92);letter-spacing:.04em;}
+
+  /* ---------- 尾屏 ---------- */
+  .ending{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:60px 30px;position:relative;overflow:hidden;background:#0b0d12;}
+  .ending .glow{position:absolute;left:50%;bottom:-160px;transform:translateX(-50%);width:440px;height:440px;border-radius:50%;
+    background:radial-gradient(circle,rgba(247,190,90,.26),transparent 62%);filter:blur(10px);}
+  #spark{position:absolute;inset:0;pointer-events:none;z-index:1;}
+  .end-lantern{width:58px;height:100px;position:relative;z-index:2;animation:swing 4s ease-in-out infinite;transform-origin:top center;}
+  .end-lantern .ld-wire{height:32px;}
+  .end-lantern .ld-body{transform:scale(1.18);transform-origin:top center;}
+  .end-title{position:relative;z-index:2;margin-top:28px;font-size:clamp(26px,7vw,37px);letter-spacing:.16em;line-height:1.65;}
+  .end-title em{font-style:normal;color:var(--gold-hi);}
+  .end-p{position:relative;z-index:2;margin-top:18px;font-size:14px;line-height:2.1;color:rgba(243,233,215,.85);letter-spacing:.06em;max-width:340px;}
+  #lightBtn,#posterBtn{position:relative;z-index:2;margin-top:20px;padding:13px 42px;border-radius:40px;
+    border:1px solid var(--gold);background:linear-gradient(180deg,rgba(200,161,90,.16),rgba(200,161,90,.04));
+    color:var(--gold);font-family:inherit;font-size:14px;letter-spacing:.4em;text-indent:.4em;cursor:pointer;transition:all .4s;}
+  #lightBtn.lit{background:linear-gradient(180deg,#f2c76b,#c8873a);color:#2a1a08;border-color:#f2c76b;box-shadow:0 0 40px rgba(247,190,90,.55);}
+  #posterBtn{border-style:dashed;letter-spacing:.28em;text-indent:.28em;}
+  #litCount{position:relative;z-index:2;margin-top:16px;font-size:11px;letter-spacing:.2em;color:rgba(243,233,215,.55);}
+  .share-tip{position:relative;z-index:2;margin-top:12px;font-size:11px;letter-spacing:.14em;color:rgba(200,161,90,.7);}
+  .credit{position:relative;z-index:2;margin-top:44px;font-size:10.5px;letter-spacing:.22em;color:rgba(243,233,215,.4);line-height:2;}
+
+  /* ---------- 海报弹层 ---------- */
+  #posterMask{position:fixed;inset:0;z-index:70;background:rgba(5,6,9,.88);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;flex-direction:column;padding:24px;}
+  #posterMask.show{display:flex;}
+  #posterImg{max-width:78vw;max-height:66vh;border-radius:10px;border:1px solid rgba(200,161,90,.5);box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  #posterMask .tip{margin-top:18px;font-size:12px;letter-spacing:.24em;color:var(--gold-hi);}
+  #posterClose{margin-top:14px;background:none;border:none;color:rgba(243,233,215,.6);font-family:inherit;font-size:12px;letter-spacing:.2em;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="ld-lantern"><div class="ld-wire"></div><div class="ld-body"><i class="ld-flame"></i></div></div>
+  <p>马灯照亮苟坝</p>
+  <div id="bar"><i></i></div>
+</div>
+
+<div id="progress"></div>
+<div id="rail">
+  <div class="track"></div>
+  <div id="railLan">
+    <svg viewBox="0 0 18 30" fill="none"><rect x="7.5" y="0.5" width="3" height="3" fill="#8a6f3e"/><path d="M3.5 5h11l1.5 16h-14L3.5 5z" stroke="#c8a15a" stroke-width="1.2" fill="rgba(247,190,90,.2)"/><circle cx="9" cy="13" r="3.4" fill="#f7c96b"/><path d="M5 25h8l1 4H4l1-4z" fill="#8a6f3e"/></svg>
+  </div>
+</div>
+<button id="sndBtn" aria-label="声音开关">🔇</button>
+<div id="torch"></div>
+<div id="torchHint">💡 手指滑动屏幕 · 你就是提灯人</div>
+
+<!-- 封面 -->
+<section class="cover">
+  <div class="bg"><img src="assets/03-lantern-night-walk.jpg" alt="雨夜马灯"></div>
+  <canvas id="rainA"></canvas>
+  <div class="flash" id="flashA"></div>
+  <div class="seal">苟坝<br>1935</div>
+  <div class="cover-inner">
+    <div class="kicker">贵州红色文化 · 长征国家文化公园（贵州）</div>
+    <h1 class="title">马灯照亮<br>苟坝</h1>
+    <div class="cover-sub">一盏马灯 · 照亮中国革命的转折之路</div>
+    <div class="cover-line"></div>
+    <button id="startBtn" aria-label="点亮马灯开始">
+      <span class="ring">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1.8 2.2 3 4.4 3 6.8 0 2.6-1.4 4.6-3 6.2-1.6-1.6-3-3.6-3-6.2C9 7.4 10.2 5.2 12 3z" fill="#f2c76b"/><rect x="9" y="15.4" width="6" height="3.4" rx="1" fill="#c8a15a"/><path d="M12 18.8v2" stroke="#c8a15a" stroke-width="1.4"/></svg>
+      </span>
+      <span>点亮马灯 · 开始阅读</span>
+    </button>
+  </div>
+  <div class="scroll-hint">▾ 向下滑动</div>
+</section>
+
+<!-- 壹：夜色行军 -->
+<section class="scene" id="s1">
+  <div class="media"><img class="par" src="assets/01-rain-march.jpg" alt="红军冒雨行军"></div>
+  <canvas id="rainB"></canvas>
+  <div class="inner">
+    <div class="chapter-tag reveal"><span class="no">壹</span><span class="rule"></span><span class="name">夜 色 苍 茫</span></div>
+    <h2 class="reveal d1">1935年3月<br>春寒料峭的黔北山乡</h2>
+    <p class="body reveal d2">遵义会议之后，中央红军在黔北辗转寻机。三月的苟坝，春雨如麻、山路泥泞，队伍进驻这个<b>只有几十户人家的小村落</b>——没有人想到，中国革命的重大转折，将在这个雨夜发生。</p>
+  </div>
+  <div class="caption">1935年3月，中央红军进驻遵义县枫香镇<b>苟坝村</b>，一场关系到红军生死存亡的争论，正在酝酿。</div>
+</section>
+
+<!-- 引文 -->
+<section class="quote" id="quoteSec">
+  <div class="glowspot"></div>
+  <div>
+    <div class="q" id="quoteText"></div>
+    <div class="qsmall">—— 苟坝会议的历史启示</div>
+  </div>
+</section>
+
+<!-- 贰：会议之争 -->
+<section class="scene">
+  <div class="media"><img class="par" src="assets/02-map-meeting.jpg" alt="苟坝会议"></div>
+  <div class="inner">
+    <div class="chapter-tag reveal"><span class="no">贰</span><span class="rule"></span><span class="name">一 场 争 论</span></div>
+    <h2 class="reveal d1">打不打鼓新场？<br>会议吵了整整一天</h2>
+    <p class="body reveal d2">3月10日，政治局扩大会议讨论进攻<b>打鼓新场</b>。几乎所有人都赞成——只有毛泽东坚决反对：敌军正向此处合围，硬打将陷红军于绝境。他说服不了会议，反而被<b>撤销了刚任职几天的前敌司令部政委</b>。</p>
+  </div>
+  <div class="caption">深夜，<b>毛泽东提着马灯</b>，沿着田间泥泞小路，独自走向周恩来的住处……</div>
+</section>
+
+<!-- 视频一 -->
+<section class="video-wrap">
+  <video src="assets/video-lantern-walk.mp4" muted loop playsinline preload="metadata" data-autoplay></video>
+  <div class="vcap" data-cap>一盏马灯，在漆黑的田埂上<b>摇晃前行</b></div>
+  <div class="vcap" data-cap>灯光所至，是<b>说服与坚持</b>，更是对中国革命的担当</div>
+  <div class="vtip">AI还原历史场景</div>
+</section>
+<div class="caption">那条小路，后来被称作<b>"毛泽东小道"</b>。</div>
+
+<!-- 叁：深夜长谈 -->
+<section class="scene">
+  <div class="media"><img class="par" src="assets/05-two-map.jpg" alt="深夜长谈"></div>
+  <div class="inner">
+    <div class="chapter-tag reveal"><span class="no">叁</span><span class="rule"></span><span class="name">深 夜 长 谈</span></div>
+    <h2 class="reveal d1">这盏灯，照亮了<br>两个人的深夜对话</h2>
+    <p class="body reveal d2">马灯的光晕下，毛泽东彻夜向周恩来陈述利害：<b>"打鼓新场是口陷阱"</b>。第二天会议，进攻计划撤销。随后，中央决定成立<b>毛泽东、周恩来、王稼祥"三人军事小组"</b>，全权指挥军事——新的领导核心就此形成。</p>
+  </div>
+  <div class="caption">苟坝会议与遵义会议一脉相承，标志着<b>毛泽东在党内军内领导地位的确立</b>。</div>
+</section>
+
+<!-- 肆：军令如山 -->
+<section class="scene">
+  <div class="media"><img class="par" src="assets/07-report.jpg" alt="撤销进攻命令"></div>
+  <div class="inner">
+    <div class="chapter-tag reveal"><span class="no">肆</span><span class="rule"></span><span class="name">军 令 如 山</span></div>
+    <h2 class="reveal d1">一纸命令<br>撤回悬崖边上的一步</h2>
+    <p class="body reveal d2">3月11日，进攻打鼓新场的作战命令正式撤销。命令传达到各军团时，部队已整装待发。<b>差一步，就是敌人布好的口袋。</b>这次"不打"，让红军躲过了一场可能伤亡惨重的硬仗。</p>
+  </div>
+  <div class="caption">坚持真理者，往往要先把道理<b>一盏灯一盏灯地讲亮</b>。</div>
+</section>
+
+<!-- 伍：拂晓出发 -->
+<section class="scene">
+  <div class="media"><img class="par" src="assets/06-departure.jpg" alt="拂晓整装出发"></div>
+  <div class="inner">
+    <div class="chapter-tag reveal"><span class="no">伍</span><span class="rule"></span><span class="name">拂 晓 出 发</span></div>
+    <h2 class="reveal d1">苟坝的晨雾里<br>队伍再次上路</h2>
+    <p class="body reveal d2">3月12日清晨，苟坝的山间雾气未散，红军各部整理行装、列队开拔。同一天，<b>"三人军事小组"正式成立</b>——此后的每一次渡河、每一次迂回，都出自这个在苟坝雨夜里形成的指挥核心。</p>
+  </div>
+  <div class="caption">队伍沿着山道向<b>赤水河</b>方向隐蔽机动。</div>
+</section>
+
+<!-- 视频二 -->
+<section class="video-wrap">
+  <video src="assets/video-dawn-march.mp4" muted loop playsinline preload="metadata" data-autoplay></video>
+  <div class="vcap" data-cap>夜尽了，天亮了</div>
+  <div class="vcap" data-cap>红军向<b>赤水河</b>方向机动，三渡赤水，跳出重围</div>
+  <div class="vtip">AI还原历史场景</div>
+</section>
+<div class="caption">历史真理有时掌握在少数人手中，<b>而坚持真理的人，手里往往只有一盏灯。</b></div>
+
+<!-- 陆：历史回声 -->
+<section class="scene">
+  <div class="media"><img class="par" src="assets/04-village-night.jpg" alt="苟坝村夜景"></div>
+  <canvas id="rainC"></canvas>
+  <div class="inner">
+    <div class="chapter-tag reveal"><span class="no">陆</span><span class="rule"></span><span class="name">历 史 回 声</span></div>
+    <h2 class="reveal d1">没有打的一仗<br>赢来的整个转折</h2>
+    <p class="body reveal d2">苟坝之夜的坚持，避免了红军一次可能的覆灭性损失。此后红军<b>三渡、四渡赤水</b>，声东击西，跳出数十万敌军的包围圈，长征迎来根本转折。</p>
+  </div>
+  <div class="caption">今天，苟坝会议会址前那条田间小路，仍保留着当年的模样。</div>
+</section>
+
+<!-- 历史原声 -->
+<section class="voices">
+  <div class="sec-title reveal">历 史 原 声</div>
+  <div class="sec-head reveal d1">他们在苟坝说过的话</div>
+  <div class="sec-sub reveal d2">据党史文献与当事人回忆整理</div>
+
+  <div class="vitem reveal">
+    <div class="qmark">“</div>
+    <div class="vtext">你们硬要打，我就不当这个前敌司令部政委了！</div>
+    <div class="vwho">—— 毛泽东 · 苟坝会议发言</div>
+    <div class="vsrc">1935年3月10日会议上，毛泽东力主不打打鼓新场，见众人坚持，以辞职表明态度。</div>
+  </div>
+
+  <div class="vitem reveal d1">
+    <div class="qmark">“</div>
+    <div class="vtext">那天夜里，毛主席提着马灯来找我，说打鼓新场这一仗不能打。</div>
+    <div class="vwho">—— 周恩来 · 回忆苟坝之夜</div>
+    <div class="vsrc">周恩来多次回忆这盏马灯下的长谈，正是这次夜访让作战命令暂缓下发。</div>
+  </div>
+
+  <div class="vitem reveal d2">
+    <div class="qmark">“</div>
+    <div class="vtext">还是三个人好，人多了不好办。</div>
+    <div class="vwho">—— 毛泽东 · 提议成立三人军事小组</div>
+    <div class="vsrc">1935年3月12日，会议据此决定由毛泽东、周恩来、王稼祥组成"三人团"。</div>
+  </div>
+
+  <div class="vitem reveal">
+    <div class="qmark">“</div>
+    <div class="vtext">真理往往在少数人手里。</div>
+    <div class="vwho">—— 毛泽东</div>
+    <div class="vsrc">苟坝会议常被引为这句话的注脚：多数人赞成的方案，未必是正确的方案。</div>
+  </div>
+
+  <div class="vnote reveal">引文据党史文献及当事人回忆整理，不同版本表述略有差异，此处取通行记述。</div>
+</section>
+
+<!-- 档案卡 -->
+<section class="archive">
+  <div class="sec-title reveal">历 史 档 案</div>
+  <div class="sec-head reveal d1">苟坝的三件"文物"</div>
+  <div class="sec-sub reveal d2">← 左右滑动翻阅 →</div>
+  <div class="cards">
+    <div class="card reveal">
+      <span class="tag">档案 · 一</span>
+      <h3>那盏马灯</h3>
+      <p>毛泽东当年夜走小道所提的马灯，如今陈列在苟坝会议陈列馆。灯罩上的烟熏痕迹，见证了那个改变红军命运的黑夜。</p>
+      <span class="fig">01</span>
+    </div>
+    <div class="card reveal d1">
+      <span class="tag">档案 · 二</span>
+      <h3>三人军事小组</h3>
+      <p>1935年3月12日，毛泽东、周恩来、王稼祥组成新的军事指挥核心。苟坝，成为新"三人团"的诞生地。</p>
+      <span class="fig">02</span>
+    </div>
+    <div class="card reveal d2">
+      <span class="tag">档案 · 三</span>
+      <h3>毛泽东小道</h3>
+      <p>从新房子到长五间，约两里的田间小路。一盏马灯走过的距离，恰是中国革命转折的距离。</p>
+      <span class="fig">03</span>
+    </div>
+  </div>
+</section>
+
+<!-- 灯下小测 -->
+<section class="quiz">
+  <div class="sec-title reveal">灯 下 小 测</div>
+  <div class="sec-head reveal d1">听完了故事，考考你</div>
+  <div id="quizList">
+    <div class="qbox reveal" data-correct="0">
+      <div class="qn">第一问</div>
+      <div class="qt">苟坝会议上，所有人都在争论要不要打哪里？</div>
+      <button class="qopt" data-idx="0">A. 打鼓新场</button>
+      <button class="qopt" data-idx="1">B. 泸州叙永</button>
+      <button class="qopt" data-idx="2">C. 遵义城</button>
+      <div class="qexp">✦ 1935年3月10日的政治局扩大会议，讨论的正是"进攻打鼓新场"问题，毛泽东是唯一坚决反对的人。</div>
+    </div>
+    <div class="qbox reveal d1" data-correct="1">
+      <div class="qn">第二问</div>
+      <div class="qt">那个雨夜，毛泽东提着什么，走过田间小道去找周恩来？</div>
+      <button class="qopt" data-idx="0">A. 火把</button>
+      <button class="qopt" data-idx="1">B. 一盏马灯</button>
+      <button class="qopt" data-idx="2">C. 油纸伞</button>
+      <div class="qexp">✦ 正是这盏马灯，照亮了"毛泽东小道"，也照亮了中国革命的转折之夜。</div>
+    </div>
+    <div class="qbox reveal d2" data-correct="0">
+      <div class="qn">第三问</div>
+      <div class="qt">苟坝会议后成立的"三人军事小组"是哪三位？</div>
+      <button class="qopt" data-idx="0">A. 毛泽东、周恩来、王稼祥</button>
+      <button class="qopt" data-idx="1">B. 毛泽东、朱德、周恩来</button>
+      <button class="qopt" data-idx="2">C. 周恩来、博古、张闻天</button>
+      <div class="qexp">✦ 1935年3月12日，毛泽东、周恩来、王稼祥组成新"三人团"，全权指挥军事行动。</div>
+    </div>
+  </div>
+  <div id="quizResult"></div>
+</section>
+
+<!-- 时间线 -->
+<section class="dark-sec">
+  <div class="sec-title reveal">苟 坝 记 事</div>
+  <div class="sec-head reveal d1">三 天 两 夜</div>
+  <div class="tl">
+    <div class="tl-item reveal"><div class="t">1935.3.10</div><div class="c">政治局扩大会议讨论进攻打鼓新场，唯毛泽东坚决反对，争执不下。</div></div>
+    <div class="tl-item reveal"><div class="t">当 夜</div><div class="c">毛泽东提马灯夜走田间小道，说服周恩来暂缓下发作战命令。</div></div>
+    <div class="tl-item reveal"><div class="t">1935.3.11</div><div class="c">会议撤销进攻打鼓新场计划，红军避免陷入敌军合围。</div></div>
+    <div class="tl-item reveal"><div class="t">1935.3.12</div><div class="c">成立毛泽东、周恩来、王稼祥"三人军事小组"，全权指挥作战。</div></div>
+    <div class="tl-item reveal"><div class="t">此 后</div><div class="c">三渡、四渡赤水，红军跳出重围，长征迎来根本转折。</div></div>
+  </div>
+</section>
+
+<!-- 尾屏 -->
+<section class="ending">
+  <div class="glow"></div>
+  <canvas id="spark"></canvas>
+  <div class="end-lantern"><div class="ld-wire"></div><div class="ld-body"><i class="ld-flame"></i></div></div>
+  <div class="end-title">一盏马灯<br>照亮<em>转折之路</em></div>
+  <p class="end-p">贵州苟坝 · 长征国家文化公园<br>把这段发生在贵州大山里的红色故事，讲给更多人听。</p>
+  <button id="lightBtn">点亮马灯 · 传递薪火</button>
+  <div id="litCount">已有 12867 人点亮马灯</div>
+  <button id="posterBtn">生成我的点亮海报</button>
+  <div class="share-tip">✦ 生成海报 · 转发朋友 · 一起提灯夜行 ✦</div>
+  <div class="credit">贵州红色文化系列 ·《马灯照亮苟坝》<br>历史资料参考：中共党史出版物 · 苟坝会议陈列馆</div>
+</section>
+
+<div id="posterMask">
+  <img id="posterImg" alt="点亮海报">
+  <div class="tip">长按海报保存 · 分享给朋友</div>
+  <button id="posterClose">关 闭</button>
+</div>
+
+<script>
+(function(){
+  /* ===== 加载进度 ===== */
+  var bar=document.querySelector('#bar i'),pct=0;
+  var t=setInterval(function(){pct=Math.min(pct+Math.random()*22,92);bar.style.width=pct+'%';},180);
+  window.addEventListener('load',function(){
+    clearInterval(t);bar.style.width='100%';
+    setTimeout(function(){document.getElementById('loader').classList.add('done');},420);
+  });
+
+  /* ===== 雨（全屏铺满，按面积自适应密度） ===== */
+  function makeRain(id,count,speed,alpha){
+    var cv=document.getElementById(id);if(!cv)return;
+    var ctx=cv.getContext('2d'),drops=[],W=0,H=0,run=false;
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    function size(){
+      var w=cv.clientWidth||cv.parentNode.clientWidth||window.innerWidth;
+      var h=cv.clientHeight||cv.parentNode.clientHeight||window.innerHeight;
+      cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      W=w;H=h;
+      /* 参考 390x700 的密度，按实际面积等比缩放，保证大屏不稀 */
+      var n=Math.max(40,Math.round(count*(W*H)/(390*700)));
+      drops=[];for(var i=0;i<n;i++)drops.push(newDrop(true));
+    }
+    function newDrop(init){
+      return{
+        x:Math.random()*(W+80)-40,
+        y:init?Math.random()*H:-20-Math.random()*40,
+        l:8+Math.random()*18,
+        v:(speed||8)*(0.75+Math.random()*0.6),
+        o:(alpha||.35)*(0.35+Math.random()*0.95),
+        w:0.6+Math.random()*0.9
+      };
+    }
+    function frame(){
+      if(!run)return;
+      ctx.clearRect(0,0,W,H);
+      ctx.lineCap='round';
+      for(var i=0;i<drops.length;i++){
+        var d=drops[i],dx=-d.l*0.26,dy=d.l;
+        ctx.globalAlpha=d.o;
+        ctx.lineWidth=d.w;
+        ctx.strokeStyle='rgba(206,222,240,.85)';
+        ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+dx,d.y+dy);ctx.stroke();
+        d.y+=d.v;d.x+=dx*(d.v/dy);
+        if(d.y>H+10||d.x<-60||d.x>W+60)drops[i]=newDrop(false);
+      }
+      ctx.globalAlpha=1;
+      requestAnimationFrame(frame);
+    }
+    var vio=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting&&!run){run=true;frame();}else if(!e.isIntersecting){run=false;}
+    });},{threshold:0});
+    vio.observe(cv);
+    size();
+    window.addEventListener('resize',function(){size();});
+    window.addEventListener('orientationchange',function(){setTimeout(size,300);});
+  }
+  makeRain('rainA',150,9.5,.42);
+  makeRain('rainB',120,8.5,.34);
+  makeRain('rainC',85,8,.26);
+
+  /* ===== 环境音引擎：雨声 + 风声 + 雷声 ===== */
+  var ac=null,master=null,sndOn=false;
+  function noiseBuffer(seconds){
+    var len=ac.sampleRate*seconds,buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0),last=0;
+    for(var i=0;i<len;i++){var w=Math.random()*2-1;last=(last+.02*w)/1.02;d[i]=last*3.2;}
+    return buf;
+  }
+  function startAmbience(){
+    if(ac){if(ac.state==='suspended')ac.resume();return;}
+    try{
+      ac=new (window.AudioContext||window.webkitAudioContext)();
+      master=ac.createGain();master.gain.value=.16;master.connect(ac.destination);
+      /* 雨：低通噪声 + 缓慢起伏 */
+      var rain=ac.createBufferSource();rain.buffer=noiseBuffer(2.5);rain.loop=true;
+      var rlp=ac.createBiquadFilter();rlp.type='lowpass';rlp.frequency.value=950;
+      var rG=ac.createGain();rG.gain.value=.6;
+      var rLfo=ac.createOscillator(),rLg=ac.createGain();
+      rLfo.frequency.value=.11;rLg.gain.value=.14;rLfo.connect(rLg);rLg.connect(rG.gain);rLfo.start();
+      rain.connect(rlp);rlp.connect(rG);rG.connect(master);rain.start();
+      /* 风：带通噪声 + 频率缓慢游移 */
+      var wind=ac.createBufferSource();wind.buffer=noiseBuffer(3);wind.loop=true;
+      var wbp=ac.createBiquadFilter();wbp.type='bandpass';wbp.frequency.value=380;wbp.Q.value=.9;
+      var wG=ac.createGain();wG.gain.value=.3;
+      var wLfo=ac.createOscillator(),wLg=ac.createGain();
+      wLfo.frequency.value=.06;wLg.gain.value=160;wLfo.connect(wLg);wLg.connect(wbp.frequency);wLfo.start();
+      wind.connect(wbp);wbp.connect(wG);wG.connect(master);wind.start();
+      /* 雷：随机间隔低频轰鸣 */
+      scheduleThunder();
+    }catch(e){}
+  }
+  function thunder(){
+    if(!ac||!sndOn)return null;
+    var src=ac.createBufferSource();src.buffer=noiseBuffer(3);
+    var lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=115;
+    var g=ac.createGain();
+    var now=ac.currentTime;
+    g.gain.setValueAtTime(0,now);
+    g.gain.linearRampToValueAtTime(.9,now+.08);
+    g.gain.exponentialRampToValueAtTime(.001,now+2.6);
+    src.connect(lp);lp.connect(g);g.connect(master.gain.value!==undefined?ac.destination:ac.destination);
+    g.disconnect();g.connect(ac.destination);/*雷声不经master，独立动态*/
+    src.start(now);src.stop(now+3);
+    return src;
+  }
+  function scheduleThunder(){
+    (function loop(){
+      setTimeout(function(){
+        if(sndOn&&ac){
+          thunder();
+          var f=document.getElementById('flashA');
+          if(f){f.classList.remove('go');void f.offsetWidth;f.classList.add('go');}
+        }
+        loop();
+      },8000+Math.random()*16000);
+    })();
+  }
+  var sndBtn=document.getElementById('sndBtn');
+  function setSnd(on){
+    sndOn=on;
+    if(!ac&&on)startAmbience();
+    if(!ac)return;
+    if(ac.state==='suspended')ac.resume();
+    master.gain.linearRampToValueAtTime(on?.16:0,ac.currentTime+.5);
+    sndBtn.textContent=on?'🔊':'🔇';
+    sndBtn.classList.toggle('on',on);
+  }
+  sndBtn.addEventListener('click',function(){setSnd(!sndOn);});
+
+  document.getElementById('startBtn').addEventListener('click',function(){
+    sndBtn.classList.add('show');setSnd(true);
+    torchOn=true;
+    document.getElementById('torchHint').classList.add('show');
+    setTimeout(function(){document.getElementById('torchHint').classList.remove('show');},3200);
+    window.scrollTo({top:window.innerHeight*0.92,behavior:'smooth'});
+  });
+
+  /* ===== 提灯跟随手指 ===== */
+  var torch=document.getElementById('torch'),torchOn=false;
+  function moveTorch(x,y){
+    if(!torchOn)return;
+    torch.style.left=x+'px';torch.style.top=y+'px';torch.classList.add('on');
+  }
+  window.addEventListener('touchmove',function(e){moveTorch(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+  window.addEventListener('touchstart',function(e){moveTorch(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+  window.addEventListener('mousemove',function(e){moveTorch(e.clientX,e.clientY);});
+
+  /* ===== 打字机引文 ===== */
+  var quoteHTML='历史，常常在深夜做出选择。<br>1935年3月的那个雨夜，<br>一盏马灯，<em>照亮了真理</em>。';
+  var typed=false,qSec=document.getElementById('quoteSec');
+  new IntersectionObserver(function(es,obs){
+    es.forEach(function(e){if(e.isIntersecting&&!typed){typed=true;obs.unobserve(qSec);typeQuote();}});
+  },{threshold:.5}).observe(qSec);
+  function typeQuote(){
+    var el=document.getElementById('quoteText');
+    var caret=document.createElement('i');caret.className='caret';el.appendChild(caret);
+    var plain=quoteHTML,i=0,buf='';
+    (function step(){
+      if(i>=plain.length){qSec.classList.add('done');return;}
+      var ch=plain[i];buf+=ch;
+      if(ch==='<'){var close=plain.indexOf('>',i);buf+=plain.slice(i+1,close+1);i=close+1;}
+      else i++;
+      el.innerHTML=buf;el.appendChild(caret);
+      setTimeout(step,ch==='<'?0:105);
+    })();
+  }
+
+  /* ===== 滚动主循环 ===== */
+  var paras=[].slice.call(document.querySelectorAll('.par'));
+  var railLan=document.getElementById('railLan'),rail=document.getElementById('rail');
+  function onScroll(){
+    var st=window.scrollY||document.documentElement.scrollTop;
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    var pr=Math.min(st/h,1);
+    document.getElementById('progress').style.width=(pr*100)+'%';
+    if(st>window.innerHeight*0.6)rail.classList.add('show');else rail.classList.remove('show');
+    railLan.style.top=(pr*(150-34))+'px';
+    paras.forEach(function(img){
+      var r=img.getBoundingClientRect();
+      if(r.top<window.innerHeight&&r.bottom>0){
+        var off=(r.top+r.height/2-window.innerHeight/2)*0.06;
+        img.style.transform='translateY('+off+'px) scale(1.12)';
+      }
+    });
+    document.querySelectorAll('video[data-autoplay]').forEach(function(v){
+      var r=v.getBoundingClientRect();
+      var vis=r.top<window.innerHeight&&r.bottom>0;
+      if(vis&&v.paused)v.play().catch(function(){});
+      if(!vis&&!v.paused)v.pause();
+      var caps=v.parentNode.querySelectorAll('.vcap');
+      if(caps.length&&v.duration){
+        var p=v.currentTime/v.duration,seg=1/caps.length;
+        caps.forEach(function(c,i){c.classList.toggle('on',p>i*seg+.05&&p<(i+1)*seg);});
+      }
+    });
+  }
+  document.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',onScroll);
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});
+  },{threshold:.16});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+
+  /* ===== 灯下小测 ===== */
+  var answered=0,correct=0;
+  document.querySelectorAll('.qbox').forEach(function(box){
+    var done=false,right=box.dataset.correct;
+    box.querySelectorAll('.qopt').forEach(function(opt){
+      opt.addEventListener('click',function(){
+        if(done)return;done=true;answered++;
+        var ok=opt.dataset.idx===right;
+        opt.classList.add(ok?'ok':'no');
+        box.querySelectorAll('.qopt').forEach(function(o){
+          o.disabled=true;
+          if(o.dataset.idx===right)o.classList.add('ok');
+        });
+        if(ok)correct++;
+        box.querySelector('.qexp').classList.add('show');
+        if(answered===3){
+          var r=document.getElementById('quizResult');
+          r.textContent=correct===3?'✦ 三问全对！你已接过这盏灯 ✦':('✦ 答对 '+correct+' 题 · 历史值得再读一遍 ✦');
+          r.classList.add('show');
+        }
+      });
+    });
+  });
+
+  /* ===== 尾屏：点亮 + 火种粒子 ===== */
+  var lit=false,base=12867;
+  var spark=document.getElementById('spark'),sctx=spark.getContext('2d'),sparks=[],srun=false;
+  function sizeSpark(){spark.width=spark.offsetWidth;spark.height=spark.offsetHeight;}
+  sizeSpark();window.addEventListener('resize',sizeSpark);
+  function newSpark(){return{x:spark.width/2+(Math.random()-.5)*120,y:spark.height*.72,vx:(Math.random()-.5)*.5,vy:-(.4+Math.random()*.9),l:0,ml:120+Math.random()*140,r:1+Math.random()*1.6};}
+  function sparkFrame(){
+    if(!srun)return;
+    sctx.clearRect(0,0,spark.width,spark.height);
+    if(lit&&sparks.length<46&&Math.random()<.4)sparks.push(newSpark());
+    for(var i=sparks.length-1;i>=0;i--){var s=sparks[i];
+      s.l++;s.x+=s.vx+Math.sin((s.l+s.y)*.02)*.3;s.y+=s.vy;
+      var a=Math.max(0,1-s.l/s.ml);
+      sctx.globalAlpha=a*.9;
+      var g=sctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*3);
+      g.addColorStop(0,'rgba(255,214,120,.95)');g.addColorStop(1,'rgba(255,150,40,0)');
+      sctx.fillStyle=g;sctx.beginPath();sctx.arc(s.x,s.y,s.r*3,0,7);sctx.fill();
+      if(s.l>=s.ml||s.y<0)sparks.splice(i,1);
+    }
+    sctx.globalAlpha=1;
+    requestAnimationFrame(sparkFrame);
+  }
+  new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting&&!srun){srun=true;sparkFrame();}else if(!e.isIntersecting){srun=false;}
+  });},{threshold:0}).observe(spark);
+
+  document.getElementById('lightBtn').addEventListener('click',function(){
+    if(lit)return;lit=true;
+    this.classList.add('lit');this.textContent='薪火相传 · 灯火长明';
+    var n=base+1;
+    document.getElementById('litCount').textContent='你是第 '+n.toLocaleString()+' 位点亮马灯的人';
+    try{localStorage.setItem('gouba_lit',String(n));}catch(e){}
+  });
+  try{var saved=localStorage.getItem('gouba_lit');
+    if(saved){var b=document.getElementById('lightBtn');b.classList.add('lit');b.textContent='薪火相传 · 灯火长明';
+      document.getElementById('litCount').textContent='你是第 '+Number(saved).toLocaleString()+' 位点亮马灯的人';}
+  }catch(e){}
+
+  /* ===== 点亮海报生成 ===== */
+  var posterBtn=document.getElementById('posterBtn');
+  posterBtn.addEventListener('click',function(){
+    var cv=document.createElement('canvas');cv.width=900;cv.height=1500;
+    var ctx=cv.getContext('2d');
+    var img=new Image();
+    img.onload=function(){
+      /* 背景：黎明行军图 cover 铺满 */
+      var iw=img.width,ih=img.height,scale=Math.max(900/iw,1500/ih);
+      var dw=iw*scale,dh=ih*scale;
+      ctx.drawImage(img,(900-dw)/2,(1500-dh)/2,dw,dh);
+      /* 暗色渐变压底 */
+      var grd=ctx.createLinearGradient(0,0,0,1500);
+      grd.addColorStop(0,'rgba(10,9,12,.62)');grd.addColorStop(.45,'rgba(10,9,12,.18)');grd.addColorStop(1,'rgba(10,9,12,.88)');
+      ctx.fillStyle=grd;ctx.fillRect(0,0,900,1500);
+      /* 金色细框 */
+      ctx.strokeStyle='rgba(200,161,90,.75)';ctx.lineWidth=2;
+      ctx.strokeRect(34,34,832,1432);
+      ctx.strokeStyle='rgba(200,161,90,.35)';ctx.lineWidth=1;
+      ctx.strokeRect(44,44,812,1412);
+      /* 顶部小字 */
+      ctx.fillStyle='#c8a15a';ctx.textAlign='center';
+      ctx.font='24px "Songti SC","SimSun",serif';
+      ctx.fillText('贵 州 红 色 文 化 · 苟 坝 会 议',450,116);
+      /* 主标题 */
+      ctx.fillStyle='#f5ecd9';
+      ctx.font='700 92px "Songti SC","SimSun",serif';
+      ctx.fillText('马 灯 照 亮 苟 坝',450,560);
+      ctx.font='30px "Songti SC","SimSun",serif';
+      ctx.fillStyle='rgba(243,233,215,.9)';
+      ctx.fillText('一盏马灯 · 照亮中国革命的转折之路',450,630);
+      /* 分隔线 */
+      ctx.strokeStyle='rgba(200,161,90,.8)';ctx.beginPath();
+      ctx.moveTo(330,690);ctx.lineTo(570,690);ctx.stroke();
+      /* 点亮信息 */
+      var litN=localStorage.getItem('gouba_lit')||12868;
+      ctx.fillStyle='#f2cf8a';
+      ctx.font='34px "Songti SC","SimSun",serif';
+      ctx.fillText('我是第 '+Number(litN).toLocaleString()+' 位点亮马灯的人',450,790);
+      ctx.font='24px "Songti SC","SimSun",serif';
+      ctx.fillStyle='rgba(243,233,215,.75)';
+      ctx.fillText('1935.3.12 · 三人军事小组在此诞生',450,850);
+      /* 底部落款 */
+      ctx.fillStyle='rgba(243,233,215,.55)';
+      ctx.font='20px "Songti SC","SimSun",serif';
+      ctx.fillText('长征国家文化公园（贵州）· 遵义 · 苟坝',450,1390);
+      ctx.fillText('长按识别 · 与我一起提灯夜行',450,1425);
+      var url=cv.toDataURL('image/jpeg',.92);
+      document.getElementById('posterImg').src=url;
+      document.getElementById('posterMask').classList.add('show');
+    };
+    img.src='assets/08-dawn-march.jpg';
+  });
+  document.getElementById('posterClose').addEventListener('click',function(){
+    document.getElementById('posterMask').classList.remove('show');
+  });
+
+  onScroll();
+})();
+</script>
+</body>
+</html>
